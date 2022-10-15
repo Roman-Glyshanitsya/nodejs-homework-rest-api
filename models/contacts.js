@@ -42,7 +42,16 @@ const addContact = async ({ name, email, phone }) => {
   return newContact;
 };
 
-const updateContact = async (contactId, body) => {};
+const updateContact = async (contactId, { name, email, phone }) => {
+  const contacts = await listContacts();
+  const index = contacts.findIndex((item) => item.id === contactId);
+  if (index === -1) {
+    return null;
+  }
+  contacts[index] = { id: contactId, name, email, phone };
+  await updateAllContacts(contacts);
+  return contacts[index];
+};
 
 module.exports = {
   listContacts,
