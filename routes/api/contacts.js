@@ -5,12 +5,26 @@ const contacts = require("../../models/contacts");
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
-  const result = await contacts.listContacts();
-  res.json(result);
+  try {
+    const result = await contacts.listContacts();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 });
 
 router.get("/:contactId", async (req, res, next) => {
-  res.json({ message: "template message" });
+  try {
+    const { contactId } = req.params;
+    const result = await contacts.getContactById(contactId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 });
 
 router.post("/", async (req, res, next) => {
