@@ -1,6 +1,6 @@
 const express = require("express");
 
-const { Contact, addSchema } = require("../../models/contact");
+const { Contact, schemas } = require("../../models/contact");
 
 const { RequestError } = require("../../helpers");
 
@@ -18,7 +18,7 @@ router.get("/", async (req, res, next) => {
 router.get("/:contactId", async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const result = await Contact.findOne({ _id: contactId });
+    const result = await Contact.findById(contactId);
     if (!result) {
       throw RequestError(404, "Not found");
     }
@@ -30,7 +30,7 @@ router.get("/:contactId", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { error } = addSchema.validate(req.body);
+    const { error } = schemas.addSchema.validate(req.body);
     if (error) {
       throw RequestError(400, "missing required name field");
     }
@@ -44,7 +44,7 @@ router.post("/", async (req, res, next) => {
 router.delete("/:contactId", async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const result = await contacts.removeContact(contactId);
+    const result = await Contact.findByIdAndRemove(contactId);
     if (!result) {
       throw RequestError(404, "Not found");
     }
@@ -58,12 +58,33 @@ router.delete("/:contactId", async (req, res, next) => {
 
 router.put("/:contactId", async (req, res, next) => {
   try {
-    const { error } = addSchema.validate(req.body);
+    const { error } = schemas.addSchema.validate(req.body);
     if (error) {
       throw RequestError(400, "missing fields");
     }
     const { contactId } = req.params;
-    const result = await contacts.updateContact(contactId, req.body);
+    const result = await Contact.findByIdAndUpdate(contactId, req.body, {
+      new: true,
+    });
+    if (!result) {
+      throw RequestError(404, "Not found");
+    }
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/:contactId/favorite", async (req, res, next) => {
+  try {
+    const { error } = schemas.updateFavoriteSchema.validate(req.body);
+    if (error) {
+      throw RequestError(400, "missing field favorite");
+    }
+    const { contactId } = req.params;
+    const result = await Contact.findByIdAndUpdate(contactId, req.body, {
+      new: true,
+    });
     if (!result) {
       throw RequestError(404, "Not found");
     }
